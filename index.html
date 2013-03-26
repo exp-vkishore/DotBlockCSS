@@ -30,8 +30,9 @@
 </head>
 <body>
 <form>
-    <input type="radio" name="sh" value="cr">Circle<br>
-    <input type="radio" name="sh" value="rec" checked=true>Rectangle
+    <input onchange="change()" type="radio" name="sh" value="cr">Circle<br>
+    <input onchange="change()" type="radio" name="sh" value="rec" >Rectangle<br>
+    <input onchange="change()" type="radio" name="sh" value="br" checked=true>Brush
 </form>
 <div id="main">
     <canvas id="cnvs" width="500" height="250" ></canvas>
@@ -41,9 +42,10 @@
     <pre>
 <code>
 
-    &lt;div id="pad"&gt;
+&lt;div id="pad"&gt;
     &lt;div id="d0"&gt;&lt;/div&gt;
-&lt;div id="d1"&gt;&lt;/div&gt;
+    &lt;div id="d1"&gt;&lt;/div&gt;
+    &lt;div id="d2"&gt;&lt;/div&gt;
 &lt;/div&gt;
 </code>
 </pre>
@@ -54,9 +56,60 @@
 
 <script type="text/javascript">
     var pos = [];
-    console.log($("form"));
-    $("#cnvs").click(function(a){
+    var shape = 'br'
+    change();
+    function Mouse(){
+            down = false;
+           // shape = 'rec';
+    }
+
+    $('#cnvs').mousedown(function(a){
+        Mouse.prototype.down = true;
+    })
+    $('#cnvs').mouseup(function(a){
+        Mouse.prototype.down = false;
+    })
+
+
+
+
+
+
+    function change(){
         shape = $("input:checked").val();
+
+        if(shape == 'br'){
+
+            $('body').on('mousemove', '#cnvs',mosMov);
+            $('body').off('click','#cnvs',mosClck);
+
+        }
+        else{
+
+            $('body').off('mousemove', '#cnvs',mosMov);
+            $('body').on('click', '#cnvs',mosClck);
+        }
+
+    }
+
+
+    function mosMov(a){
+
+        var mos = new Mouse();
+        if(mos.down){
+            $("#cnvs").drawArc({
+                fillStyle: "green",
+                x: a.offsetX, y: a.offsetY,
+                radius: 3
+            });
+            pos.push({X:a.offsetX,Y:a.offsetY,color:"#000",shape:shape})
+        }
+        /**/
+
+    }
+
+    function mosClck(a){
+
         if(shape == 'cr'){
 
             $("#cnvs").drawArc({
@@ -67,7 +120,7 @@
         }
         if(shape == 'rec'){
 
-            $("canvas").drawRect({
+            $("#cnvs").drawRect({
                 fillStyle: "#000",
                 x: a.offsetX, y: a.offsetY,
                 width: 5,
@@ -75,14 +128,20 @@
                 fromCenter: true
             });
         }
-       // alert(shape);
+        // alert(shape);
         pos.push({X:a.offsetX,Y:a.offsetY,color:"#000",shape:shape})
 
-    })
+    }
+
+
+
+
+
     function codeMe(){
-        //console.log(pos);
+        console.log(pos);
         var boxShadowCr=' ' ;
         var boxShadowRec=' ' ;
+        var boxShadowBr=' ' ;
         for(var i =0; i<pos.length; i++){
 
             var phantom = pos[i].X+'px '+pos[i].Y+'px '+pos[i].color;
@@ -90,12 +149,13 @@
 
             if(pos[i].shape == 'rec'){if(boxShadowRec==' '){boxShadowRec = phantom;}else{boxShadowRec = boxShadowRec +','+phantom;}}
 
+            if(pos[i].shape == 'br'){if(boxShadowBr==' '){boxShadowBr = phantom;}else{boxShadowBr = boxShadowBr +','+phantom;}}
         }
 
         var css = "#pad { width: 500px; height: 250px;}";
         if(boxShadowRec!=' ') css = css+'<br>'+"#d0{ width: 6px;height: 6px;background: transparent;box-shadow:"+boxShadowRec+"}";
         if(boxShadowCr!=' ')  css = css+'<br>'+"#d1{ width: 6px;height: 6px;background: transparent;box-shadow:"+boxShadowCr+";border-radius:50%}";
-
+        if(boxShadowBr!=' ')  css = css+'<br>'+"#d2{ width: 6px;height: 6px;background: transparent;box-shadow:"+boxShadowBr+";border-radius:50%}";
         $("#code").html('&lt;style&gt;<br>'+css+'<br>&lt;/style&gt;');
 
     }
